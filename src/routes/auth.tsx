@@ -52,7 +52,7 @@ function AuthPage() {
           <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-[var(--shadow-glow)]">
             <Tv className="h-6 w-6" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Ghana TV Factory ERP</h1>
+          <h1 className="text-2xl font-bold tracking-tight">KANTANKA ELECTRONICS Factory ERP</h1>
           <p className="text-sm text-muted-foreground">Sign in to access the factory control center</p>
         </div>
         <Card className="border-border bg-card p-6">
@@ -84,9 +84,7 @@ function AuthPage() {
               </form>
             </TabsContent>
           </Tabs>
-          <p className="mt-4 text-center text-xs text-muted-foreground">
-            The first account created becomes Admin. Subsequent accounts get the Production role by default.
-          </p>
+         
         </Card>
       </div>
     </div>
