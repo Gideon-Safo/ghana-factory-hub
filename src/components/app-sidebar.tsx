@@ -49,7 +49,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((it) => {
-                const allowed = !it.roles || hasAny(it.roles as AppRoleArr);
+                const allowed = !it.roles || hasAny([...it.roles] as AppRoleArr);
                 if (!allowed) return null;
                 const active = path === it.url;
                 return (
