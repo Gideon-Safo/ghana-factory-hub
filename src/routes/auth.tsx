@@ -53,7 +53,7 @@ function AuthPage() {
       className="relative flex min-h-screen items-center justify-center bg-background bg-cover bg-center bg-no-repeat p-4"
       style={{ backgroundImage: `url(${authBg})` }}
     >
-      <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-background/30" />
       <div className="relative w-full max-w-md">
         <div className="mb-6 flex flex-col items-center text-center">
           <div className="mb-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-background shadow-[var(--shadow-glow)]">
