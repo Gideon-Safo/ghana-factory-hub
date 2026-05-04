@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import logo from "@/assets/logo.png";
+import authBg from "@/assets/auth-bg.jpeg";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({ component: AuthPage });
