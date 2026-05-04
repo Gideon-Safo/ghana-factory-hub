@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { KpiCard } from "@/components/kpi-card";
 import { PageHeader } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
+import { Reveal } from "@/components/reveal";
 import { Tv, Factory, ShieldCheck, Package, DollarSign, AlertTriangle, Wrench } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
@@ -40,10 +41,12 @@ function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Factory Control Center" description="Real-time production, quality, and sales overview." />
+      <div className="float-in">
+        <PageHeader title="Factory Control Center" description="Real-time production, quality, and sales overview." />
+      </div>
 
       {m.alerts.length > 0 && (
-        <Card className="border-warning/40 bg-warning/5 p-4">
+        <Card className="float-in border-warning/40 bg-warning/5 p-4" style={{ animationDelay: "80ms" }}>
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 h-5 w-5 text-warning" />
             <div className="space-y-1">
@@ -57,57 +60,67 @@ function Dashboard() {
       )}
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <KpiCard label="Units today" value={m.todayUnits} icon={Tv} tone="primary" hint={`${m.weekUnits} this week`} />
-        <KpiCard label="QC pass rate" value={`${m.qcPassRate.toFixed(1)}%`} icon={ShieldCheck} tone="success" />
-        <KpiCard label="Defect rate" value={`${m.defectRate.toFixed(1)}%`} icon={Wrench} tone="destructive" hint={`Rework ${m.reworkRate.toFixed(1)}%`} />
-        <KpiCard label="Revenue (₵)" value={fmt(m.revenue)} icon={DollarSign} tone="info" hint="Last 14 days" />
-        <KpiCard label="Units this month" value={m.monthUnits} icon={Factory} tone="primary" />
-        <KpiCard label="Inventory value (₵)" value={fmt(m.inventoryValue)} icon={Package} tone="info" />
-        <KpiCard label="Low stock items" value={m.lowStock} icon={AlertTriangle} tone="warning" />
-        <KpiCard label="Rework rate" value={`${m.reworkRate.toFixed(1)}%`} icon={Wrench} tone="warning" />
+        {[
+          <KpiCard key="a" label="Units today" value={m.todayUnits} icon={Tv} tone="primary" hint={`${m.weekUnits} this week`} />,
+          <KpiCard key="b" label="QC pass rate" value={`${m.qcPassRate.toFixed(1)}%`} icon={ShieldCheck} tone="success" />,
+          <KpiCard key="c" label="Defect rate" value={`${m.defectRate.toFixed(1)}%`} icon={Wrench} tone="destructive" hint={`Rework ${m.reworkRate.toFixed(1)}%`} />,
+          <KpiCard key="d" label="Revenue (₵)" value={fmt(m.revenue)} icon={DollarSign} tone="info" hint="Last 14 days" />,
+          <KpiCard key="e" label="Units this month" value={m.monthUnits} icon={Factory} tone="primary" />,
+          <KpiCard key="f" label="Inventory value (₵)" value={fmt(m.inventoryValue)} icon={Package} tone="info" />,
+          <KpiCard key="g" label="Low stock items" value={m.lowStock} icon={AlertTriangle} tone="warning" />,
+          <KpiCard key="h" label="Rework rate" value={`${m.reworkRate.toFixed(1)}%`} icon={Wrench} tone="warning" />,
+        ].map((node, i) => (
+          <div key={i} className="float-in" style={{ animationDelay: `${120 + i * 60}ms` }}>{node}</div>
+        ))}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="border-border bg-card p-4 lg:col-span-2">
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Production · last 14 days</h3>
-          <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={m.byDay}>
-              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.32 0.02 250)" />
-              <XAxis dataKey="date" stroke="oklch(0.7 0.02 250)" fontSize={11} />
-              <YAxis stroke="oklch(0.7 0.02 250)" fontSize={11} />
-              <Tooltip contentStyle={{ background: "oklch(0.22 0.025 250)", border: "1px solid oklch(0.32 0.02 250)", borderRadius: 6 }} />
-              <Legend />
-              <Line type="monotone" dataKey="produced" stroke="oklch(0.78 0.18 75)" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="defects" stroke="oklch(0.65 0.22 25)" strokeWidth={2} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
-        </Card>
+        <Reveal className="lg:col-span-2">
+          <Card className="border-border bg-card p-4">
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Production · last 14 days</h3>
+            <ResponsiveContainer width="100%" height={260}>
+              <LineChart data={m.byDay}>
+                <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.32 0.02 250)" />
+                <XAxis dataKey="date" stroke="oklch(0.7 0.02 250)" fontSize={11} />
+                <YAxis stroke="oklch(0.7 0.02 250)" fontSize={11} />
+                <Tooltip contentStyle={{ background: "oklch(0.22 0.025 250)", border: "1px solid oklch(0.32 0.02 250)", borderRadius: 6 }} />
+                <Legend />
+                <Line type="monotone" dataKey="produced" stroke="oklch(0.78 0.18 75)" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="defects" stroke="oklch(0.65 0.22 25)" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </Card>
+        </Reveal>
 
-        <Card className="border-border bg-card p-4">
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">QC results</h3>
-          <ResponsiveContainer width="100%" height={260}>
-            <PieChart>
-              <Pie data={m.qcSplit} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} paddingAngle={2}>
-                {m.qcSplit.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
-              </Pie>
-              <Tooltip contentStyle={{ background: "oklch(0.22 0.025 250)", border: "1px solid oklch(0.32 0.02 250)", borderRadius: 6 }} />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </Card>
+        <Reveal delay={100}>
+          <Card className="border-border bg-card p-4">
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">QC results</h3>
+            <ResponsiveContainer width="100%" height={260}>
+              <PieChart>
+                <Pie data={m.qcSplit} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} paddingAngle={2}>
+                  {m.qcSplit.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
+                </Pie>
+                <Tooltip contentStyle={{ background: "oklch(0.22 0.025 250)", border: "1px solid oklch(0.32 0.02 250)", borderRadius: 6 }} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </Card>
+        </Reveal>
 
-        <Card className="border-border bg-card p-4 lg:col-span-3">
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Output by model</h3>
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={m.byModel}>
-              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.32 0.02 250)" />
-              <XAxis dataKey="name" stroke="oklch(0.7 0.02 250)" fontSize={11} />
-              <YAxis stroke="oklch(0.7 0.02 250)" fontSize={11} />
-              <Tooltip contentStyle={{ background: "oklch(0.22 0.025 250)", border: "1px solid oklch(0.32 0.02 250)", borderRadius: 6 }} />
-              <Bar dataKey="units" fill="oklch(0.72 0.16 220)" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </Card>
+        <Reveal className="lg:col-span-3" delay={150}>
+          <Card className="border-border bg-card p-4">
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Output by model</h3>
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={m.byModel}>
+                <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.32 0.02 250)" />
+                <XAxis dataKey="name" stroke="oklch(0.7 0.02 250)" fontSize={11} />
+                <YAxis stroke="oklch(0.7 0.02 250)" fontSize={11} />
+                <Tooltip contentStyle={{ background: "oklch(0.22 0.025 250)", border: "1px solid oklch(0.32 0.02 250)", borderRadius: 6 }} />
+                <Bar dataKey="units" fill="oklch(0.72 0.16 220)" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+        </Reveal>
       </div>
     </div>
   );
