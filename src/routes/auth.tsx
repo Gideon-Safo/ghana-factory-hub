@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import logo from "@/assets/logo.png";
+import authBg from "@/assets/auth-bg.jpeg";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({ component: AuthPage });
@@ -48,8 +49,12 @@ function AuthPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
+    <div
+      className="relative flex min-h-screen items-center justify-center bg-background bg-cover bg-center bg-no-repeat p-4"
+      style={{ backgroundImage: `url(${authBg})` }}
+    >
+      <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+      <div className="relative w-full max-w-md">
         <div className="mb-6 flex flex-col items-center text-center">
           <div className="mb-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-background shadow-[var(--shadow-glow)]">
             <img src={logo} alt="Kantanka Electronics logo" className="h-16 w-16 object-contain" />
