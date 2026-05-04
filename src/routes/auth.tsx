@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Tv, Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
+import logo from "@/assets/logo.png";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({ component: AuthPage });
@@ -50,8 +51,8 @@ function AuthPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <div className="mb-6 flex flex-col items-center text-center">
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-[var(--shadow-glow)]">
-            <Tv className="h-6 w-6" />
+          <div className="mb-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-background shadow-[var(--shadow-glow)]">
+            <img src={logo} alt="Kantanka Electronics logo" className="h-16 w-16 object-contain" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight">KANTANKA ELECTRONICS Factory ERP</h1>
           <p className="text-sm text-muted-foreground">Sign in to access the factory control center</p>

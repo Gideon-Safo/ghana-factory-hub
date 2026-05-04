@@ -1,8 +1,9 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Factory, Package, ShieldCheck, Wrench, ShoppingCart,
-  AlertTriangle, Users, BarChart3, Tv,
+  AlertTriangle, Users, BarChart3,
 } from "lucide-react";
+import logo from "@/assets/logo.png";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
@@ -32,8 +33,8 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-2 px-2 py-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <Tv className="h-5 w-5" />
+          <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-md bg-background">
+            <img src={logo} alt="Kantanka Electronics logo" className="h-8 w-8 object-contain" />
           </div>
           {!collapsed && (
             <div className="flex flex-col leading-tight">
