@@ -141,13 +141,18 @@ async function load(): Promise<Metrics> {
   const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
   const fortnightAgo = new Date(today); fortnightAgo.setDate(fortnightAgo.getDate() - 14);
 
-  const [{ data: runs }, { data: qc }, { data: comps }, { data: sales }, { data: models }] = await Promise.all([
+  const [{ data: runs }, { data: qc }, { data: comps }, { data: sales }, { data: models }, { data: allRuns }, { data: allSales }] = await Promise.all([
     supabase.from("production_runs").select("run_date,actual_qty,defects_qty,rework_qty,model_id").gte("run_date", fortnightAgo.toISOString().slice(0, 10)),
     supabase.from("qc_inspections").select("final_result"),
     supabase.from("components").select("current_stock,unit_cost,reorder_level,name"),
     supabase.from("sales").select("revenue,sale_date").gte("sale_date", fortnightAgo.toISOString().slice(0, 10)),
     supabase.from("tv_models").select("id,name"),
+    supabase.from("production_runs").select("actual_qty"),
+    supabase.from("sales").select("units_sold"),
   ]);
+  const totalProduced = (allRuns ?? []).reduce((s, r) => s + (r.actual_qty ?? 0), 0);
+  const totalSold = (allSales ?? []).reduce((s, r) => s + (r.units_sold ?? 0), 0);
+  const availableTvStock = Math.max(0, totalProduced - totalSold);
 
   const todayStr = today.toISOString().slice(0, 10);
   const weekStr = weekAgo.toISOString().slice(0, 10);
