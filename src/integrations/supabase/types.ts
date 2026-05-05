@@ -386,25 +386,43 @@ export type Database = {
           created_at: string
           default_price: number
           id: string
+          initial_stock: number
           is_smart: boolean
+          item_code: string | null
           name: string
+          reorder_level: number
           size_inches: number
+          supplier: string | null
+          unit_cost: number
+          warehouse_location: string | null
         }
         Insert: {
           created_at?: string
           default_price?: number
           id?: string
+          initial_stock?: number
           is_smart?: boolean
+          item_code?: string | null
           name: string
+          reorder_level?: number
           size_inches: number
+          supplier?: string | null
+          unit_cost?: number
+          warehouse_location?: string | null
         }
         Update: {
           created_at?: string
           default_price?: number
           id?: string
+          initial_stock?: number
           is_smart?: boolean
+          item_code?: string | null
           name?: string
+          reorder_level?: number
           size_inches?: number
+          supplier?: string | null
+          unit_cost?: number
+          warehouse_location?: string | null
         }
         Relationships: []
       }
