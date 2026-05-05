@@ -1,1 +1,0 @@
-DELETE FROM public.sales WHERE model_id = (SELECT id FROM public.tv_models WHERE name ILIKE 'Kantanka 32%' LIMIT 1);

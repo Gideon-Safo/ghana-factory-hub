@@ -20,13 +20,11 @@ type Comp = {
   id: string; item_code: string; name: string; supplier: string | null;
   current_stock: number; reorder_level: number; unit_cost: number; warehouse_location: string | null;
 };
-type ModelStock = { id: string; name: string; produced: number; sold: number; available: number };
 
 function InventoryPage() {
   const { hasAny } = useAuth();
   const canEdit = hasAny(["admin", "inventory"]);
   const [items, setItems] = useState<Comp[]>([]);
-  const [modelStock, setModelStock] = useState<ModelStock[]>([]);
   const [q, setQ] = useState("");
   const [openNew, setOpenNew] = useState(false);
   const [openMove, setOpenMove] = useState(false);
@@ -37,21 +35,8 @@ function InventoryPage() {
 
   useEffect(() => { load(); }, []);
   async function load() {
-    const [{ data }, { data: models }, { data: runs }, { data: sales }] = await Promise.all([
-      supabase.from("components").select("*").order("name"),
-      supabase.from("tv_models").select("id,name").order("name"),
-      supabase.from("production_runs").select("model_id,actual_qty"),
-      supabase.from("sales").select("model_id,units_sold"),
-    ]);
+    const { data } = await supabase.from("components").select("*").order("name");
     setItems((data as Comp[]) ?? []);
-    const produced = new Map<string, number>();
-    for (const r of runs ?? []) produced.set(r.model_id, (produced.get(r.model_id) ?? 0) + (r.actual_qty ?? 0));
-    const sold = new Map<string, number>();
-    for (const s of sales ?? []) sold.set(s.model_id, (sold.get(s.model_id) ?? 0) + (s.units_sold ?? 0));
-    setModelStock((models ?? []).map((m) => {
-      const p = produced.get(m.id) ?? 0; const so = sold.get(m.id) ?? 0;
-      return { id: m.id, name: m.name, produced: p, sold: so, available: Math.max(0, p - so) };
-    }));
   }
 
   const filtered = useMemo(
@@ -102,32 +87,6 @@ function InventoryPage() {
           </Dialog>
         )}
       />
-      <Card className="border-border bg-card">
-        <div className="border-b border-border p-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">TV stock by model</h3>
-        </div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Model</TableHead>
-              <TableHead className="text-right">Produced</TableHead>
-              <TableHead className="text-right">Sold</TableHead>
-              <TableHead className="text-right">Available</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {modelStock.map((m) => (
-              <TableRow key={m.id}>
-                <TableCell>{m.name}</TableCell>
-                <TableCell className="text-right text-muted-foreground">{m.produced}</TableCell>
-                <TableCell className="text-right text-muted-foreground">{m.sold}</TableCell>
-                <TableCell className="text-right font-semibold">{m.available}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
-
       <div className="flex items-center gap-2">
         <Input placeholder="Search components..." value={q} onChange={(e) => setQ(e.target.value)} className="max-w-sm" />
       </div>
