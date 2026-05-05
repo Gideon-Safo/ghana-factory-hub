@@ -12,23 +12,17 @@ const toneMap: Record<Tone, string> = {
 };
 
 export function KpiCard({
-  label, value, icon: Icon, tone = "primary", hint, backgroundImage,
+  label, value, icon: Icon, tone = "primary", hint,
 }: {
   label: string;
   value: string | number;
   icon: LucideIcon;
   tone?: Tone;
   hint?: string;
-  backgroundImage?: string;
 }) {
-  const hasBg = Boolean(backgroundImage);
   return (
-    <Card
-      className="relative overflow-hidden border-border bg-card p-5 bg-cover bg-center"
-      style={backgroundImage ? { backgroundImage: `url(${backgroundImage})` } : undefined}
-    >
-      {hasBg && <div className="absolute inset-0 bg-background/70" />}
-      <div className="relative flex items-start justify-between">
+    <Card className="relative overflow-hidden border-border bg-card p-5">
+      <div className="flex items-start justify-between">
         <div>
           <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
           <p className="mt-2 text-3xl font-bold tracking-tight text-foreground">{value}</p>
