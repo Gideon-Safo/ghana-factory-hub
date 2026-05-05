@@ -102,6 +102,32 @@ function InventoryPage() {
           </Dialog>
         )}
       />
+      <Card className="border-border bg-card">
+        <div className="border-b border-border p-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">TV stock by model</h3>
+        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Model</TableHead>
+              <TableHead className="text-right">Produced</TableHead>
+              <TableHead className="text-right">Sold</TableHead>
+              <TableHead className="text-right">Available</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {modelStock.map((m) => (
+              <TableRow key={m.id}>
+                <TableCell>{m.name}</TableCell>
+                <TableCell className="text-right text-muted-foreground">{m.produced}</TableCell>
+                <TableCell className="text-right text-muted-foreground">{m.sold}</TableCell>
+                <TableCell className="text-right font-semibold">{m.available}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Card>
+
       <div className="flex items-center gap-2">
         <Input placeholder="Search components..." value={q} onChange={(e) => setQ(e.target.value)} className="max-w-sm" />
       </div>
