@@ -21,6 +21,7 @@ type Metrics = {
   defectRate: number; qcPassRate: number; reworkRate: number;
   inventoryValue: number; revenue: number;
   lowStock: number;
+  availableTvStock: number;
   byDay: { date: string; produced: number; defects: number }[];
   byModel: { name: string; units: number }[];
   qcSplit: { name: string; value: number }[];
