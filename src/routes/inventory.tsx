@@ -26,6 +26,7 @@ function InventoryPage() {
   const { hasAny } = useAuth();
   const canEdit = hasAny(["admin", "inventory"]);
   const [items, setItems] = useState<Comp[]>([]);
+  const [modelStock, setModelStock] = useState<ModelStock[]>([]);
   const [q, setQ] = useState("");
   const [openNew, setOpenNew] = useState(false);
   const [openMove, setOpenMove] = useState(false);
@@ -36,8 +37,21 @@ function InventoryPage() {
 
   useEffect(() => { load(); }, []);
   async function load() {
-    const { data } = await supabase.from("components").select("*").order("name");
+    const [{ data }, { data: models }, { data: runs }, { data: sales }] = await Promise.all([
+      supabase.from("components").select("*").order("name"),
+      supabase.from("tv_models").select("id,name").order("name"),
+      supabase.from("production_runs").select("model_id,actual_qty"),
+      supabase.from("sales").select("model_id,units_sold"),
+    ]);
     setItems((data as Comp[]) ?? []);
+    const produced = new Map<string, number>();
+    for (const r of runs ?? []) produced.set(r.model_id, (produced.get(r.model_id) ?? 0) + (r.actual_qty ?? 0));
+    const sold = new Map<string, number>();
+    for (const s of sales ?? []) sold.set(s.model_id, (sold.get(s.model_id) ?? 0) + (s.units_sold ?? 0));
+    setModelStock((models ?? []).map((m) => {
+      const p = produced.get(m.id) ?? 0; const so = sold.get(m.id) ?? 0;
+      return { id: m.id, name: m.name, produced: p, sold: so, available: Math.max(0, p - so) };
+    }));
   }
 
   const filtered = useMemo(
