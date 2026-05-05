@@ -5,7 +5,7 @@ import { KpiCard } from "@/components/kpi-card";
 import { PageHeader } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
 import { Reveal } from "@/components/reveal";
-import { Tv, Factory, ShieldCheck, Package, DollarSign, AlertTriangle, Wrench } from "lucide-react";
+import { Tv, Factory, ShieldCheck, Package, Banknote, AlertTriangle, Wrench, Boxes } from "lucide-react";
 import kpiUnits from "@/assets/kpi-units.jpg";
 import kpiQc from "@/assets/kpi-qc.jpg";
 import kpiDefect from "@/assets/kpi-defect.jpg";
