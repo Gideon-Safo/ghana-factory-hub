@@ -209,6 +209,7 @@ async function load(): Promise<Metrics> {
     todayUnits, weekUnits, monthUnits,
     defectRate, qcPassRate, reworkRate,
     inventoryValue, revenue, lowStock,
+    availableTvStock,
     byDay, byModel,
     qcSplit: [{ name: "PASS", value: qcPass }, { name: "FAIL", value: qcFail }],
     alerts,
