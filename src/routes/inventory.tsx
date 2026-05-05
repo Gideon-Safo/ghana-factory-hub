@@ -20,6 +20,7 @@ type Comp = {
   id: string; item_code: string; name: string; supplier: string | null;
   current_stock: number; reorder_level: number; unit_cost: number; warehouse_location: string | null;
 };
+type ModelStock = { id: string; name: string; produced: number; sold: number; available: number };
 
 function InventoryPage() {
   const { hasAny } = useAuth();
