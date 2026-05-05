@@ -67,7 +67,7 @@ function Dashboard() {
           <KpiCard key="a" label="Units today" value={m.todayUnits} icon={Tv} tone="primary" hint={`${m.weekUnits} this week`} backgroundImage={kpiUnits} />,
           <KpiCard key="b" label="QC pass rate" value={`${m.qcPassRate.toFixed(1)}%`} icon={ShieldCheck} tone="success" backgroundImage={kpiQc} />,
           <KpiCard key="c" label="Defect rate" value={`${m.defectRate.toFixed(1)}%`} icon={Wrench} tone="destructive" hint={`Rework ${m.reworkRate.toFixed(1)}%`} backgroundImage={kpiDefect} />,
-          <KpiCard key="d" label="Revenue (₵)" value={fmt(m.revenue)} icon={DollarSign} tone="info" hint="Last 14 days" />,
+          <KpiCard key="d" label="Revenue (₵)" value={fmt(m.revenue)} icon={Banknote} tone="info" hint="Last 14 days" />,
           <KpiCard key="e" label="Units this month" value={m.monthUnits} icon={Factory} tone="primary" />,
           <KpiCard key="f" label="Inventory value (₵)" value={fmt(m.inventoryValue)} icon={Package} tone="info" />,
           <KpiCard key="g" label="Low stock items" value={m.lowStock} icon={AlertTriangle} tone="warning" />,
