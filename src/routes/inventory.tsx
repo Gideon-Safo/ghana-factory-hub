@@ -80,6 +80,29 @@ function InventoryPage() {
     toast.success("Stock movement applied"); setOpenMove(false); load();
   }
 
+  async function saveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editItem) return;
+    const { id, ...rest } = editItem;
+    const { error } = await supabase.from("components").update({
+      item_code: rest.item_code,
+      name: rest.name,
+      supplier: rest.supplier,
+      warehouse_location: rest.warehouse_location,
+      reorder_level: Number(rest.reorder_level),
+      unit_cost: Number(rest.unit_cost),
+    }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Component updated"); setOpenEdit(false); load();
+  }
+
+  async function deleteItem(id: string) {
+    if (!confirm("Delete this component?")) return;
+    const { error } = await supabase.from("components").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Component deleted"); load();
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
