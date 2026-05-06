@@ -224,6 +224,24 @@ function InventoryPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={openEdit} onOpenChange={setOpenEdit}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit component</DialogTitle></DialogHeader>
+          {editItem && (
+            <form onSubmit={saveEdit} className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5"><Label>Item code</Label><Input required value={editItem.item_code} onChange={(e) => setEditItem({ ...editItem, item_code: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Name</Label><Input required value={editItem.name} onChange={(e) => setEditItem({ ...editItem, name: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Supplier</Label><Input value={editItem.supplier ?? ""} onChange={(e) => setEditItem({ ...editItem, supplier: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Location</Label><Input value={editItem.warehouse_location ?? ""} onChange={(e) => setEditItem({ ...editItem, warehouse_location: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Reorder level</Label><Input type="number" value={editItem.reorder_level} onChange={(e) => setEditItem({ ...editItem, reorder_level: +e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Unit cost (₵)</Label><Input type="number" step="0.01" value={editItem.unit_cost} onChange={(e) => setEditItem({ ...editItem, unit_cost: +e.target.value })} /></div>
+              <Button type="button" variant="destructive" className="col-span-1" onClick={() => { deleteItem(editItem.id); setOpenEdit(false); }}>Delete</Button>
+              <Button type="submit" className="col-span-1">Save</Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
