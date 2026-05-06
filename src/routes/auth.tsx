@@ -53,7 +53,7 @@ function AuthPage() {
       className="relative flex min-h-screen items-center justify-center bg-background bg-cover bg-center bg-no-repeat p-4"
       style={{ backgroundImage: `url(${authBg})` }}
     >
-      <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-background/30" />
       <div className="relative w-full max-w-md">
         <div className="mb-6 flex flex-col items-center text-center">
           <div className="mb-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-background shadow-[var(--shadow-glow)]">
@@ -62,7 +62,7 @@ function AuthPage() {
           <h1 className="text-2xl font-bold tracking-tight">KANTANKA ELECTRONICS Factory ERP</h1>
           <p className="text-sm text-muted-foreground">Sign in to access the factory control center</p>
         </div>
-        <Card className="border-border bg-card/50 p-6 backdrop-blur-md">
+        <Card className="border-border bg-card p-6">
           <Tabs value={tab} onValueChange={(v) => setTab(v as "signin" | "signup")}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Sign in</TabsTrigger>

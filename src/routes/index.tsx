@@ -6,6 +6,9 @@ import { PageHeader } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
 import { Reveal } from "@/components/reveal";
 import { Tv, Factory, ShieldCheck, Package, DollarSign, AlertTriangle, Wrench } from "lucide-react";
+import kpiUnits from "@/assets/kpi-units.jpg";
+import kpiQc from "@/assets/kpi-qc.jpg";
+import kpiDefect from "@/assets/kpi-defect.jpg";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
   BarChart, Bar, PieChart, Pie, Cell, Legend,
@@ -61,9 +64,9 @@ function Dashboard() {
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[
-          <KpiCard key="a" label="Units today" value={m.todayUnits} icon={Tv} tone="primary" hint={`${m.weekUnits} this week`} />,
-          <KpiCard key="b" label="QC pass rate" value={`${m.qcPassRate.toFixed(1)}%`} icon={ShieldCheck} tone="success" />,
-          <KpiCard key="c" label="Defect rate" value={`${m.defectRate.toFixed(1)}%`} icon={Wrench} tone="destructive" hint={`Rework ${m.reworkRate.toFixed(1)}%`} />,
+          <KpiCard key="a" label="Units today" value={m.todayUnits} icon={Tv} tone="primary" hint={`${m.weekUnits} this week`} backgroundImage={kpiUnits} />,
+          <KpiCard key="b" label="QC pass rate" value={`${m.qcPassRate.toFixed(1)}%`} icon={ShieldCheck} tone="success" backgroundImage={kpiQc} />,
+          <KpiCard key="c" label="Defect rate" value={`${m.defectRate.toFixed(1)}%`} icon={Wrench} tone="destructive" hint={`Rework ${m.reworkRate.toFixed(1)}%`} backgroundImage={kpiDefect} />,
           <KpiCard key="d" label="Revenue (₵)" value={fmt(m.revenue)} icon={DollarSign} tone="info" hint="Last 14 days" />,
           <KpiCard key="e" label="Units this month" value={m.monthUnits} icon={Factory} tone="primary" />,
           <KpiCard key="f" label="Inventory value (₵)" value={fmt(m.inventoryValue)} icon={Package} tone="info" />,
