@@ -186,9 +186,14 @@ function InventoryPage() {
                   <TableCell className="text-right">{(c.current_stock * Number(c.unit_cost)).toLocaleString()}</TableCell>
                   <TableCell>
                     {canEdit && (
-                      <Button variant="ghost" size="sm" onClick={() => { setMoveItem(c); setMove({ movement_type: "IN", quantity: 0, reference: "", notes: "" }); setOpenMove(true); }}>
-                        <ArrowDownUp className="h-4 w-4" />
-                      </Button>
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => { setEditItem(c); setOpenEdit(true); }} title="Edit">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => { setMoveItem(c); setMove({ movement_type: "IN", quantity: 0, reference: "", notes: "" }); setOpenMove(true); }} title="Stock movement">
+                          <ArrowDownUp className="h-4 w-4" />
+                        </Button>
+                      </div>
                     )}
                   </TableCell>
                 </TableRow>
