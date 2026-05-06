@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, ArrowDownUp } from "lucide-react";
+import { Plus, ArrowDownUp, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 
@@ -31,6 +31,8 @@ function InventoryPage() {
   const [openNew, setOpenNew] = useState(false);
   const [openMove, setOpenMove] = useState(false);
   const [moveItem, setMoveItem] = useState<Comp | null>(null);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [editItem, setEditItem] = useState<Comp | null>(null);
 
   const [form, setForm] = useState({ item_code: "", name: "", supplier: "", current_stock: 0, reorder_level: 0, unit_cost: 0, warehouse_location: "" });
   const [move, setMove] = useState({ movement_type: "IN", quantity: 0, reference: "", notes: "" });
@@ -76,6 +78,29 @@ function InventoryPage() {
     });
     if (error) return toast.error(error.message);
     toast.success("Stock movement applied"); setOpenMove(false); load();
+  }
+
+  async function saveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editItem) return;
+    const { id, ...rest } = editItem;
+    const { error } = await supabase.from("components").update({
+      item_code: rest.item_code,
+      name: rest.name,
+      supplier: rest.supplier,
+      warehouse_location: rest.warehouse_location,
+      reorder_level: Number(rest.reorder_level),
+      unit_cost: Number(rest.unit_cost),
+    }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Component updated"); setOpenEdit(false); load();
+  }
+
+  async function deleteItem(id: string) {
+    if (!confirm("Delete this component?")) return;
+    const { error } = await supabase.from("components").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Component deleted"); load();
   }
 
   return (
@@ -161,9 +186,14 @@ function InventoryPage() {
                   <TableCell className="text-right">{(c.current_stock * Number(c.unit_cost)).toLocaleString()}</TableCell>
                   <TableCell>
                     {canEdit && (
-                      <Button variant="ghost" size="sm" onClick={() => { setMoveItem(c); setMove({ movement_type: "IN", quantity: 0, reference: "", notes: "" }); setOpenMove(true); }}>
-                        <ArrowDownUp className="h-4 w-4" />
-                      </Button>
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => { setEditItem(c); setOpenEdit(true); }} title="Edit">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => { setMoveItem(c); setMove({ movement_type: "IN", quantity: 0, reference: "", notes: "" }); setOpenMove(true); }} title="Stock movement">
+                          <ArrowDownUp className="h-4 w-4" />
+                        </Button>
+                      </div>
                     )}
                   </TableCell>
                 </TableRow>
@@ -192,6 +222,24 @@ function InventoryPage() {
             <div className="space-y-1.5 col-span-2"><Label>Notes</Label><Input value={move.notes} onChange={(e) => setMove({ ...move, notes: e.target.value })} /></div>
             <Button type="submit" className="col-span-2">Apply</Button>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={openEdit} onOpenChange={setOpenEdit}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit component</DialogTitle></DialogHeader>
+          {editItem && (
+            <form onSubmit={saveEdit} className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5"><Label>Item code</Label><Input required value={editItem.item_code} onChange={(e) => setEditItem({ ...editItem, item_code: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Name</Label><Input required value={editItem.name} onChange={(e) => setEditItem({ ...editItem, name: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Supplier</Label><Input value={editItem.supplier ?? ""} onChange={(e) => setEditItem({ ...editItem, supplier: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Location</Label><Input value={editItem.warehouse_location ?? ""} onChange={(e) => setEditItem({ ...editItem, warehouse_location: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Reorder level</Label><Input type="number" value={editItem.reorder_level} onChange={(e) => setEditItem({ ...editItem, reorder_level: +e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Unit cost (₵)</Label><Input type="number" step="0.01" value={editItem.unit_cost} onChange={(e) => setEditItem({ ...editItem, unit_cost: +e.target.value })} /></div>
+              <Button type="button" variant="destructive" className="col-span-1" onClick={() => { deleteItem(editItem.id); setOpenEdit(false); }}>Delete</Button>
+              <Button type="submit" className="col-span-1">Save</Button>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
     </div>
