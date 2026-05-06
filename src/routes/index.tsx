@@ -5,7 +5,7 @@ import { KpiCard } from "@/components/kpi-card";
 import { PageHeader } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
 import { Reveal } from "@/components/reveal";
-import { Tv, Factory, ShieldCheck, Package, DollarSign, AlertTriangle, Wrench } from "lucide-react";
+import { Tv, Factory, ShieldCheck, Package, Banknote, AlertTriangle, Wrench, Boxes } from "lucide-react";
 import kpiUnits from "@/assets/kpi-units.jpg";
 import kpiQc from "@/assets/kpi-qc.jpg";
 import kpiDefect from "@/assets/kpi-defect.jpg";
@@ -21,6 +21,7 @@ type Metrics = {
   defectRate: number; qcPassRate: number; reworkRate: number;
   inventoryValue: number; revenue: number;
   lowStock: number;
+  availableTvStock: number;
   byDay: { date: string; produced: number; defects: number }[];
   byModel: { name: string; units: number }[];
   qcSplit: { name: string; value: number }[];
@@ -67,8 +68,9 @@ function Dashboard() {
           <KpiCard key="a" label="Units today" value={m.todayUnits} icon={Tv} tone="primary" hint={`${m.weekUnits} this week`} backgroundImage={kpiUnits} />,
           <KpiCard key="b" label="QC pass rate" value={`${m.qcPassRate.toFixed(1)}%`} icon={ShieldCheck} tone="success" backgroundImage={kpiQc} />,
           <KpiCard key="c" label="Defect rate" value={`${m.defectRate.toFixed(1)}%`} icon={Wrench} tone="destructive" hint={`Rework ${m.reworkRate.toFixed(1)}%`} backgroundImage={kpiDefect} />,
-          <KpiCard key="d" label="Revenue (₵)" value={fmt(m.revenue)} icon={DollarSign} tone="info" hint="Last 14 days" />,
+          <KpiCard key="d" label="Revenue (₵)" value={fmt(m.revenue)} icon={Banknote} tone="info" hint="Last 14 days" />,
           <KpiCard key="e" label="Units this month" value={m.monthUnits} icon={Factory} tone="primary" />,
+          <KpiCard key="i" label="Available TV stock" value={m.availableTvStock} icon={Boxes} tone="success" hint="Produced minus sold" />,
           <KpiCard key="f" label="Inventory value (₵)" value={fmt(m.inventoryValue)} icon={Package} tone="info" />,
           <KpiCard key="g" label="Low stock items" value={m.lowStock} icon={AlertTriangle} tone="warning" />,
           <KpiCard key="h" label="Rework rate" value={`${m.reworkRate.toFixed(1)}%`} icon={Wrench} tone="warning" />,
@@ -139,13 +141,18 @@ async function load(): Promise<Metrics> {
   const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
   const fortnightAgo = new Date(today); fortnightAgo.setDate(fortnightAgo.getDate() - 14);
 
-  const [{ data: runs }, { data: qc }, { data: comps }, { data: sales }, { data: models }] = await Promise.all([
+  const [{ data: runs }, { data: qc }, { data: comps }, { data: sales }, { data: models }, { data: allRuns }, { data: allSales }] = await Promise.all([
     supabase.from("production_runs").select("run_date,actual_qty,defects_qty,rework_qty,model_id").gte("run_date", fortnightAgo.toISOString().slice(0, 10)),
     supabase.from("qc_inspections").select("final_result"),
     supabase.from("components").select("current_stock,unit_cost,reorder_level,name"),
     supabase.from("sales").select("revenue,sale_date").gte("sale_date", fortnightAgo.toISOString().slice(0, 10)),
     supabase.from("tv_models").select("id,name"),
+    supabase.from("production_runs").select("actual_qty"),
+    supabase.from("sales").select("units_sold"),
   ]);
+  const totalProduced = (allRuns ?? []).reduce((s, r) => s + (r.actual_qty ?? 0), 0);
+  const totalSold = (allSales ?? []).reduce((s, r) => s + (r.units_sold ?? 0), 0);
+  const availableTvStock = Math.max(0, totalProduced - totalSold);
 
   const todayStr = today.toISOString().slice(0, 10);
   const weekStr = weekAgo.toISOString().slice(0, 10);
@@ -202,6 +209,7 @@ async function load(): Promise<Metrics> {
     todayUnits, weekUnits, monthUnits,
     defectRate, qcPassRate, reworkRate,
     inventoryValue, revenue, lowStock,
+    availableTvStock,
     byDay, byModel,
     qcSplit: [{ name: "PASS", value: qcPass }, { name: "FAIL", value: qcFail }],
     alerts,
