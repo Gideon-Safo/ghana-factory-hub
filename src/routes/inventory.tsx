@@ -31,6 +31,8 @@ function InventoryPage() {
   const [openNew, setOpenNew] = useState(false);
   const [openMove, setOpenMove] = useState(false);
   const [moveItem, setMoveItem] = useState<Comp | null>(null);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [editItem, setEditItem] = useState<Comp | null>(null);
 
   const [form, setForm] = useState({ item_code: "", name: "", supplier: "", current_stock: 0, reorder_level: 0, unit_cost: 0, warehouse_location: "" });
   const [move, setMove] = useState({ movement_type: "IN", quantity: 0, reference: "", notes: "" });
