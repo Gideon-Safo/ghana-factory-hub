@@ -60,9 +60,9 @@ function AuthPage() {
             <img src={logo} alt="Kantanka Electronics logo" className="h-16 w-16 object-contain" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight">KANTANKA ELECTRONICS Factory ERP</h1>
-          <p className="text-sm text-muted-foreground">Sign in to access the factory control center</p>
+          <p className="text-sm text-amber-400">Sign in to access the factory control center</p>
         </div>
-        <Card className="border-border bg-card p-6">
+        <Card className="border-border bg-card/50 p-6 backdrop-blur-md">
           <Tabs value={tab} onValueChange={(v) => setTab(v as "signin" | "signup")}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Sign in</TabsTrigger>
