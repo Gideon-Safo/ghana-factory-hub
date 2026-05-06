@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Download } from "lucide-react";
+import { Plus, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 
@@ -23,17 +23,22 @@ type Run = {
   tv_models?: { name: string } | null;
 };
 
+type ModelRow = { model_id: string; planned_qty: number; actual_qty: number; defects_qty: number; rework_qty: number };
+
+const emptyRow = (): ModelRow => ({ model_id: "", planned_qty: 100, actual_qty: 0, defects_qty: 0, rework_qty: 0 });
+
 function ProductionPage() {
   const { hasAny } = useAuth();
   const canEdit = hasAny(["admin", "production"]);
   const [runs, setRuns] = useState<Run[]>([]);
   const [models, setModels] = useState<{ id: string; name: string }[]>([]);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({
+  const [meta, setMeta] = useState({
     run_date: new Date().toISOString().slice(0, 10),
-    shift: "Morning", model_id: "", planned_qty: 100, actual_qty: 0,
-    defects_qty: 0, rework_qty: 0, supervisor: "",
+    shift: "Morning",
+    supervisor: "",
   });
+  const [rows, setRows] = useState<ModelRow[]>([emptyRow()]);
 
   useEffect(() => { load(); supabase.from("tv_models").select("id,name").order("name").then(({ data }) => setModels(data ?? [])); }, []);
 
@@ -43,27 +48,42 @@ function ProductionPage() {
     setRuns((data as Run[]) ?? []);
   }
 
+  function updateRow(i: number, patch: Partial<ModelRow>) {
+    setRows(rows.map((r, idx) => idx === i ? { ...r, ...patch } : r));
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.model_id) return toast.error("Select a model");
-    const { error } = await supabase.from("production_runs").insert({
-      ...form,
-      planned_qty: Number(form.planned_qty), actual_qty: Number(form.actual_qty),
-      defects_qty: Number(form.defects_qty), rework_qty: Number(form.rework_qty),
-      shift: form.shift as "Morning" | "Afternoon" | "Night",
-    });
+    const valid = rows.filter(r => r.model_id);
+    if (!valid.length) return toast.error("Select at least one model");
+    const ids = valid.map(r => r.model_id);
+    if (new Set(ids).size !== ids.length) return toast.error("Duplicate models selected");
+
+    const payload = valid.map(r => ({
+      run_date: meta.run_date,
+      shift: meta.shift as "Morning" | "Afternoon" | "Night",
+      supervisor: meta.supervisor,
+      model_id: r.model_id,
+      planned_qty: Number(r.planned_qty),
+      actual_qty: Number(r.actual_qty),
+      defects_qty: Number(r.defects_qty),
+      rework_qty: Number(r.rework_qty),
+    }));
+    const { error } = await supabase.from("production_runs").insert(payload);
     if (error) return toast.error(error.message);
-    toast.success("Production run added — stock auto-deducted");
-    setOpen(false); load();
+    toast.success(`${payload.length} production run(s) added — stock auto-deducted`);
+    setOpen(false);
+    setRows([emptyRow()]);
+    load();
   }
 
   function exportCsv() {
-    const rows = [["Date","Shift","Model","Planned","Actual","Defects","Rework","Eff%","Supervisor"]];
+    const out = [["Date","Shift","Model","Planned","Actual","Defects","Rework","Eff%","Supervisor"]];
     for (const r of runs) {
       const eff = r.planned_qty ? ((r.actual_qty / r.planned_qty) * 100).toFixed(1) : "0";
-      rows.push([r.run_date, r.shift, r.tv_models?.name ?? "", String(r.planned_qty), String(r.actual_qty), String(r.defects_qty), String(r.rework_qty), eff, r.supervisor ?? ""]);
+      out.push([r.run_date, r.shift, r.tv_models?.name ?? "", String(r.planned_qty), String(r.actual_qty), String(r.defects_qty), String(r.rework_qty), eff, r.supervisor ?? ""]);
     }
-    download(rows.map(r => r.join(",")).join("\n"), "production.csv", "text/csv");
+    download(out.map(r => r.join(",")).join("\n"), "production.csv", "text/csv");
   }
 
   return (
@@ -77,32 +97,59 @@ function ProductionPage() {
             {canEdit && (
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild><Button size="sm"><Plus className="mr-2 h-4 w-4" />New run</Button></DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-w-2xl">
                   <DialogHeader><DialogTitle>Log production run</DialogTitle></DialogHeader>
-                  <form onSubmit={submit} className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5"><Label>Date</Label><Input type="date" value={form.run_date} onChange={(e) => setForm({ ...form, run_date: e.target.value })} required /></div>
-                    <div className="space-y-1.5"><Label>Shift</Label>
-                      <Select value={form.shift} onValueChange={(v) => setForm({ ...form, shift: v })}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Morning">Morning</SelectItem>
-                          <SelectItem value="Afternoon">Afternoon</SelectItem>
-                          <SelectItem value="Night">Night</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  <form onSubmit={submit} className="space-y-4">
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-1.5"><Label>Date</Label><Input type="date" value={meta.run_date} onChange={(e) => setMeta({ ...meta, run_date: e.target.value })} required /></div>
+                      <div className="space-y-1.5"><Label>Shift</Label>
+                        <Select value={meta.shift} onValueChange={(v) => setMeta({ ...meta, shift: v })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Morning">Morning</SelectItem>
+                            <SelectItem value="Afternoon">Afternoon</SelectItem>
+                            <SelectItem value="Night">Night</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1.5"><Label>Supervisor</Label><Input value={meta.supervisor} onChange={(e) => setMeta({ ...meta, supervisor: e.target.value })} /></div>
                     </div>
-                    <div className="col-span-2 space-y-1.5"><Label>Model</Label>
-                      <Select value={form.model_id} onValueChange={(v) => setForm({ ...form, model_id: v })}>
-                        <SelectTrigger><SelectValue placeholder="Choose..." /></SelectTrigger>
-                        <SelectContent>{models.map(m => <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>)}</SelectContent>
-                      </Select>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label>Models</Label>
+                        <Button type="button" variant="outline" size="sm" onClick={() => setRows([...rows, emptyRow()])}>
+                          <Plus className="mr-1 h-3 w-3" />Add model
+                        </Button>
+                      </div>
+                      {rows.map((row, i) => {
+                        const used = new Set(rows.filter((_, idx) => idx !== i).map(r => r.model_id));
+                        return (
+                          <div key={i} className="grid grid-cols-12 gap-2 items-end rounded-md border border-border p-2">
+                            <div className="col-span-12 sm:col-span-4 space-y-1">
+                              <Label className="text-xs">Model</Label>
+                              <Select value={row.model_id} onValueChange={(v) => updateRow(i, { model_id: v })}>
+                                <SelectTrigger><SelectValue placeholder="Choose..." /></SelectTrigger>
+                                <SelectContent>
+                                  {models.filter(m => !used.has(m.id)).map(m => <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>)}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="col-span-3 sm:col-span-2 space-y-1"><Label className="text-xs">Planned</Label><Input type="number" min={0} value={row.planned_qty} onChange={(e) => updateRow(i, { planned_qty: +e.target.value })} /></div>
+                            <div className="col-span-3 sm:col-span-2 space-y-1"><Label className="text-xs">Actual</Label><Input type="number" min={0} value={row.actual_qty} onChange={(e) => updateRow(i, { actual_qty: +e.target.value })} /></div>
+                            <div className="col-span-3 sm:col-span-1 space-y-1"><Label className="text-xs">Defects</Label><Input type="number" min={0} value={row.defects_qty} onChange={(e) => updateRow(i, { defects_qty: +e.target.value })} /></div>
+                            <div className="col-span-3 sm:col-span-2 space-y-1"><Label className="text-xs">Rework</Label><Input type="number" min={0} value={row.rework_qty} onChange={(e) => updateRow(i, { rework_qty: +e.target.value })} /></div>
+                            <div className="col-span-12 sm:col-span-1 flex justify-end">
+                              <Button type="button" variant="ghost" size="icon" disabled={rows.length === 1} onClick={() => setRows(rows.filter((_, idx) => idx !== i))}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                    <div className="space-y-1.5"><Label>Planned qty</Label><Input type="number" min={0} value={form.planned_qty} onChange={(e) => setForm({ ...form, planned_qty: +e.target.value })} /></div>
-                    <div className="space-y-1.5"><Label>Actual qty</Label><Input type="number" min={0} value={form.actual_qty} onChange={(e) => setForm({ ...form, actual_qty: +e.target.value })} /></div>
-                    <div className="space-y-1.5"><Label>Defects</Label><Input type="number" min={0} value={form.defects_qty} onChange={(e) => setForm({ ...form, defects_qty: +e.target.value })} /></div>
-                    <div className="space-y-1.5"><Label>Rework</Label><Input type="number" min={0} value={form.rework_qty} onChange={(e) => setForm({ ...form, rework_qty: +e.target.value })} /></div>
-                    <div className="col-span-2 space-y-1.5"><Label>Supervisor</Label><Input value={form.supervisor} onChange={(e) => setForm({ ...form, supervisor: e.target.value })} /></div>
-                    <Button type="submit" className="col-span-2">Save run</Button>
+
+                    <Button type="submit" className="w-full">Save run{rows.length > 1 ? "s" : ""}</Button>
                   </form>
                 </DialogContent>
               </Dialog>
