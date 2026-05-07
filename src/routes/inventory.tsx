@@ -141,6 +141,7 @@ function InventoryPage() {
               <TableHead className="text-right">Sold</TableHead>
               <TableHead className="text-right">Available</TableHead>
               <TableHead className="text-right">Stock Available</TableHead>
+              {hasAny(["admin"]) && <TableHead></TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -152,6 +153,13 @@ function InventoryPage() {
                 <TableCell className="text-right text-muted-foreground">{m.sold}</TableCell>
                 <TableCell className="text-right font-semibold">{m.available}</TableCell>
                 <TableCell className="text-right font-semibold">{m.stockAvailable}</TableCell>
+                {hasAny(["admin"]) && (
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="sm" onClick={() => { setEditModel({ id: m.id, name: m.name, initial_stock: m.initial }); setOpenEditModel(true); }} title="Edit initial stock">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>
