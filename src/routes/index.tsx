@@ -70,7 +70,7 @@ function Dashboard() {
           <KpiCard key="c" label="Defect rate" value={`${m.defectRate.toFixed(1)}%`} icon={Wrench} tone="destructive" hint={`Rework ${m.reworkRate.toFixed(1)}%`} backgroundImage={kpiDefect} />,
           <KpiCard key="d" label="Revenue (₵)" value={fmt(m.revenue)} icon={Banknote} tone="info" hint="Last 14 days" />,
           <KpiCard key="e" label="Units this month" value={m.monthUnits} icon={Factory} tone="primary" />,
-          <KpiCard key="i" label="Available TV stock" value={m.availableTvStock} icon={Boxes} tone="success" hint="Produced minus sold" />,
+          <KpiCard key="i" label="Available TV stock" value={m.availableTvStock} icon={Boxes} tone="success" />,
           <KpiCard key="f" label="Inventory value (₵)" value={fmt(m.inventoryValue)} icon={Package} tone="info" />,
           <KpiCard key="g" label="Low stock items" value={m.lowStock} icon={AlertTriangle} tone="warning" />,
           <KpiCard key="h" label="Rework rate" value={`${m.reworkRate.toFixed(1)}%`} icon={Wrench} tone="warning" />,
