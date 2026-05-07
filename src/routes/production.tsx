@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Download, Trash2 } from "lucide-react";
+import { Plus, Download, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 
@@ -39,6 +39,8 @@ function ProductionPage() {
     supervisor: "",
   });
   const [rows, setRows] = useState<ModelRow[]>([emptyRow()]);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editRun, setEditRun] = useState<Run | null>(null);
 
   useEffect(() => { load(); supabase.from("tv_models").select("id,name").order("name").then(({ data }) => setModels(data ?? [])); }, []);
 
@@ -75,6 +77,29 @@ function ProductionPage() {
     setOpen(false);
     setRows([emptyRow()]);
     load();
+  }
+
+  async function saveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editRun) return;
+    const { error } = await supabase.from("production_runs").update({
+      run_date: editRun.run_date,
+      shift: editRun.shift as "Morning" | "Afternoon" | "Night",
+      supervisor: editRun.supervisor,
+      planned_qty: Number(editRun.planned_qty),
+      actual_qty: Number(editRun.actual_qty),
+      defects_qty: Number(editRun.defects_qty),
+      rework_qty: Number(editRun.rework_qty),
+    }).eq("id", editRun.id);
+    if (error) return toast.error(error.message);
+    toast.success("Run updated"); setEditOpen(false); load();
+  }
+
+  async function deleteRun(id: string) {
+    if (!confirm("Delete this production run?")) return;
+    const { error } = await supabase.from("production_runs").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Run deleted"); load();
   }
 
   function exportCsv() {
@@ -165,6 +190,7 @@ function ProductionPage() {
               <TableHead className="text-right">Planned</TableHead><TableHead className="text-right">Actual</TableHead>
               <TableHead className="text-right">Defects</TableHead><TableHead className="text-right">Rework</TableHead>
               <TableHead className="text-right">Eff %</TableHead><TableHead>Supervisor</TableHead>
+              {canEdit && <TableHead></TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -185,12 +211,47 @@ function ProductionPage() {
                     </span>
                   </TableCell>
                   <TableCell>{r.supervisor}</TableCell>
+                  {canEdit && (
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="sm" onClick={() => { setEditRun(r); setEditOpen(true); }} title="Edit">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               );
             })}
           </TableBody>
         </Table>
       </Card>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit production run</DialogTitle></DialogHeader>
+          {editRun && (
+            <form onSubmit={saveEdit} className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5"><Label>Date</Label><Input type="date" value={editRun.run_date} onChange={(e) => setEditRun({ ...editRun, run_date: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Shift</Label>
+                <Select value={editRun.shift} onValueChange={(v) => setEditRun({ ...editRun, shift: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Morning">Morning</SelectItem>
+                    <SelectItem value="Afternoon">Afternoon</SelectItem>
+                    <SelectItem value="Night">Night</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5"><Label>Planned</Label><Input type="number" value={editRun.planned_qty} onChange={(e) => setEditRun({ ...editRun, planned_qty: +e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Actual</Label><Input type="number" value={editRun.actual_qty} onChange={(e) => setEditRun({ ...editRun, actual_qty: +e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Defects</Label><Input type="number" value={editRun.defects_qty} onChange={(e) => setEditRun({ ...editRun, defects_qty: +e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Rework</Label><Input type="number" value={editRun.rework_qty} onChange={(e) => setEditRun({ ...editRun, rework_qty: +e.target.value })} /></div>
+              <div className="space-y-1.5 col-span-2"><Label>Supervisor</Label><Input value={editRun.supervisor ?? ""} onChange={(e) => setEditRun({ ...editRun, supervisor: e.target.value })} /></div>
+              <Button type="button" variant="destructive" onClick={() => { deleteRun(editRun.id); setEditOpen(false); }}>Delete</Button>
+              <Button type="submit">Save</Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
