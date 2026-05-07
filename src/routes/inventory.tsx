@@ -33,6 +33,8 @@ function InventoryPage() {
   const [moveItem, setMoveItem] = useState<Comp | null>(null);
   const [openEdit, setOpenEdit] = useState(false);
   const [editItem, setEditItem] = useState<Comp | null>(null);
+  const [openEditModel, setOpenEditModel] = useState(false);
+  const [editModel, setEditModel] = useState<{ id: string; name: string; initial_stock: number } | null>(null);
 
   const [form, setForm] = useState({ item_code: "", name: "", supplier: "", current_stock: 0, reorder_level: 0, unit_cost: 0, warehouse_location: "" });
   const [move, setMove] = useState({ movement_type: "IN", quantity: 0, reference: "", notes: "" });
@@ -104,6 +106,14 @@ function InventoryPage() {
     toast.success("Component deleted"); load();
   }
 
+  async function saveModelInitial(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editModel) return;
+    const { error } = await supabase.from("tv_models").update({ initial_stock: Number(editModel.initial_stock) }).eq("id", editModel.id);
+    if (error) return toast.error(error.message);
+    toast.success("Initial stock updated"); setOpenEditModel(false); load();
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -141,6 +151,7 @@ function InventoryPage() {
               <TableHead className="text-right">Sold</TableHead>
               <TableHead className="text-right">Available</TableHead>
               <TableHead className="text-right">Stock Available</TableHead>
+              {hasAny(["admin"]) && <TableHead></TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -152,6 +163,13 @@ function InventoryPage() {
                 <TableCell className="text-right text-muted-foreground">{m.sold}</TableCell>
                 <TableCell className="text-right font-semibold">{m.available}</TableCell>
                 <TableCell className="text-right font-semibold">{m.stockAvailable}</TableCell>
+                {hasAny(["admin"]) && (
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="sm" onClick={() => { setEditModel({ id: m.id, name: m.name, initial_stock: m.initial }); setOpenEditModel(true); }} title="Edit initial stock">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>
@@ -243,6 +261,18 @@ function InventoryPage() {
               <div className="space-y-1.5"><Label>Unit cost (₵)</Label><Input type="number" step="0.01" value={editItem.unit_cost} onChange={(e) => setEditItem({ ...editItem, unit_cost: +e.target.value })} /></div>
               <Button type="button" variant="destructive" className="col-span-1" onClick={() => { deleteItem(editItem.id); setOpenEdit(false); }}>Delete</Button>
               <Button type="submit" className="col-span-1">Save</Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={openEditModel} onOpenChange={setOpenEditModel}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit initial stock · {editModel?.name}</DialogTitle></DialogHeader>
+          {editModel && (
+            <form onSubmit={saveModelInitial} className="space-y-3">
+              <div className="space-y-1.5"><Label>Initial stock</Label><Input type="number" required value={editModel.initial_stock} onChange={(e) => setEditModel({ ...editModel, initial_stock: +e.target.value })} /></div>
+              <Button type="submit" className="w-full">Save</Button>
             </form>
           )}
         </DialogContent>
