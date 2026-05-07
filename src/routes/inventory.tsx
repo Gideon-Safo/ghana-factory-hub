@@ -106,6 +106,14 @@ function InventoryPage() {
     toast.success("Component deleted"); load();
   }
 
+  async function saveModelInitial(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editModel) return;
+    const { error } = await supabase.from("tv_models").update({ initial_stock: Number(editModel.initial_stock) }).eq("id", editModel.id);
+    if (error) return toast.error(error.message);
+    toast.success("Initial stock updated"); setOpenEditModel(false); load();
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
