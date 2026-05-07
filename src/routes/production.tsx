@@ -39,6 +39,8 @@ function ProductionPage() {
     supervisor: "",
   });
   const [rows, setRows] = useState<ModelRow[]>([emptyRow()]);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editRun, setEditRun] = useState<Run | null>(null);
 
   useEffect(() => { load(); supabase.from("tv_models").select("id,name").order("name").then(({ data }) => setModels(data ?? [])); }, []);
 
