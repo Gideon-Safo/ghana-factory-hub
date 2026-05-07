@@ -20,7 +20,7 @@ type Comp = {
   id: string; item_code: string; name: string; supplier: string | null;
   current_stock: number; reorder_level: number; unit_cost: number; warehouse_location: string | null;
 };
-type ModelStock = { id: string; name: string; produced: number; sold: number; available: number };
+type ModelStock = { id: string; name: string; initial: number; produced: number; sold: number; available: number; stockAvailable: number };
 
 function InventoryPage() {
   const { hasAny } = useAuth();
@@ -41,7 +41,7 @@ function InventoryPage() {
   async function load() {
     const [{ data }, { data: models }, { data: runs }, { data: sales }] = await Promise.all([
       supabase.from("components").select("*").order("name"),
-      supabase.from("tv_models").select("id,name").order("name"),
+      supabase.from("tv_models").select("id,name,initial_stock").order("name"),
       supabase.from("production_runs").select("model_id,actual_qty"),
       supabase.from("sales").select("model_id,units_sold"),
     ]);
@@ -52,7 +52,8 @@ function InventoryPage() {
     for (const s of sales ?? []) sold.set(s.model_id, (sold.get(s.model_id) ?? 0) + (s.units_sold ?? 0));
     setModelStock((models ?? []).map((m) => {
       const p = produced.get(m.id) ?? 0; const so = sold.get(m.id) ?? 0;
-      return { id: m.id, name: m.name, produced: p, sold: so, available: Math.max(0, p - so) };
+      const init = m.initial_stock ?? 0;
+      return { id: m.id, name: m.name, initial: init, produced: p, sold: so, available: Math.max(0, p - so), stockAvailable: init - p };
     }));
   }
 
@@ -135,18 +136,22 @@ function InventoryPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Model</TableHead>
+              <TableHead className="text-right">Initial</TableHead>
               <TableHead className="text-right">Produced</TableHead>
               <TableHead className="text-right">Sold</TableHead>
               <TableHead className="text-right">Available</TableHead>
+              <TableHead className="text-right">Stock Available</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {modelStock.map((m) => (
               <TableRow key={m.id}>
                 <TableCell>{m.name}</TableCell>
+                <TableCell className="text-right text-muted-foreground">{m.initial}</TableCell>
                 <TableCell className="text-right text-muted-foreground">{m.produced}</TableCell>
                 <TableCell className="text-right text-muted-foreground">{m.sold}</TableCell>
                 <TableCell className="text-right font-semibold">{m.available}</TableCell>
+                <TableCell className="text-right font-semibold">{m.stockAvailable}</TableCell>
               </TableRow>
             ))}
           </TableBody>
