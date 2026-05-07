@@ -79,6 +79,29 @@ function ProductionPage() {
     load();
   }
 
+  async function saveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editRun) return;
+    const { error } = await supabase.from("production_runs").update({
+      run_date: editRun.run_date,
+      shift: editRun.shift as "Morning" | "Afternoon" | "Night",
+      supervisor: editRun.supervisor,
+      planned_qty: Number(editRun.planned_qty),
+      actual_qty: Number(editRun.actual_qty),
+      defects_qty: Number(editRun.defects_qty),
+      rework_qty: Number(editRun.rework_qty),
+    }).eq("id", editRun.id);
+    if (error) return toast.error(error.message);
+    toast.success("Run updated"); setEditOpen(false); load();
+  }
+
+  async function deleteRun(id: string) {
+    if (!confirm("Delete this production run?")) return;
+    const { error } = await supabase.from("production_runs").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Run deleted"); load();
+  }
+
   function exportCsv() {
     const out = [["Date","Shift","Model","Planned","Actual","Defects","Rework","Eff%","Supervisor"]];
     for (const r of runs) {
