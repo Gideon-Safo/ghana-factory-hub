@@ -41,7 +41,7 @@ function InventoryPage() {
   async function load() {
     const [{ data }, { data: models }, { data: runs }, { data: sales }] = await Promise.all([
       supabase.from("components").select("*").order("name"),
-      supabase.from("tv_models").select("id,name").order("name"),
+      supabase.from("tv_models").select("id,name,initial_stock").order("name"),
       supabase.from("production_runs").select("model_id,actual_qty"),
       supabase.from("sales").select("model_id,units_sold"),
     ]);
@@ -52,7 +52,8 @@ function InventoryPage() {
     for (const s of sales ?? []) sold.set(s.model_id, (sold.get(s.model_id) ?? 0) + (s.units_sold ?? 0));
     setModelStock((models ?? []).map((m) => {
       const p = produced.get(m.id) ?? 0; const so = sold.get(m.id) ?? 0;
-      return { id: m.id, name: m.name, produced: p, sold: so, available: Math.max(0, p - so) };
+      const init = m.initial_stock ?? 0;
+      return { id: m.id, name: m.name, initial: init, produced: p, sold: so, available: Math.max(0, p - so), stockAvailable: init - p };
     }));
   }
 
