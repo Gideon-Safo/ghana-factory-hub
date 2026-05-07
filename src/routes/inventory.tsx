@@ -136,18 +136,22 @@ function InventoryPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Model</TableHead>
+              <TableHead className="text-right">Initial</TableHead>
               <TableHead className="text-right">Produced</TableHead>
               <TableHead className="text-right">Sold</TableHead>
               <TableHead className="text-right">Available</TableHead>
+              <TableHead className="text-right">Stock Available</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {modelStock.map((m) => (
               <TableRow key={m.id}>
                 <TableCell>{m.name}</TableCell>
+                <TableCell className="text-right text-muted-foreground">{m.initial}</TableCell>
                 <TableCell className="text-right text-muted-foreground">{m.produced}</TableCell>
                 <TableCell className="text-right text-muted-foreground">{m.sold}</TableCell>
                 <TableCell className="text-right font-semibold">{m.available}</TableCell>
+                <TableCell className="text-right font-semibold">{m.stockAvailable}</TableCell>
               </TableRow>
             ))}
           </TableBody>
