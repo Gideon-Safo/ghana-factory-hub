@@ -265,6 +265,18 @@ function InventoryPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      <Dialog open={openEditModel} onOpenChange={setOpenEditModel}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit initial stock · {editModel?.name}</DialogTitle></DialogHeader>
+          {editModel && (
+            <form onSubmit={saveModelInitial} className="space-y-3">
+              <div className="space-y-1.5"><Label>Initial stock</Label><Input type="number" required value={editModel.initial_stock} onChange={(e) => setEditModel({ ...editModel, initial_stock: +e.target.value })} /></div>
+              <Button type="submit" className="w-full">Save</Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
